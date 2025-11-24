@@ -1,275 +1,327 @@
-import React, { useState } from 'react';
-import { Shield, Zap, Eye, Brain, Globe, Lock, Play, Heart, AlertTriangle, ArrowRight, ArrowLeft, CheckCircle, Flame, Activity, Gamepad2, Skull } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 11: 大腦升級指南</title>
+    <!-- 引入 Tailwind CSS (樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 React 和 ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 引入 Babel (讓瀏覽器看懂 JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        body { background-color: #020617; }
+        .slide-enter { opacity: 0; transform: translateX(100%); }
+        .slide-enter-active { opacity: 1; transform: translateX(0); transition: all 500ms; }
+        .slide-exit { opacity: 1; transform: translateX(0); }
+        .slide-exit-active { opacity: 0; transform: translateX(-100%); transition: all 500ms; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-const Slide = ({ children, className = "" }) => (
-  <div className={`flex flex-col items-center justify-center h-full p-6 text-center transition-opacity duration-500 ${className}`}>
-    {children}
-  </div>
-);
+    <script type="text/babel">
+        const { useState } = React;
 
-const App = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
+        // --- 圖標組件 (手刻 SVG 以便在單一檔案運行) ---
+        const Icon = ({ path, color, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {path}
+            </svg>
+        );
 
-  const slides = [
-    {
-      id: 'intro',
-      content: (
-        <div className="space-y-6 w-full">
-          <div className="relative">
-            <div className="absolute inset-0 bg-cyan-500 blur-3xl opacity-20 rounded-full"></div>
-            <Gamepad2 size={80} className="text-cyan-400 relative z-10 mx-auto animate-bounce" />
-          </div>
-          <h1 className="text-3xl font-black text-white tracking-wider font-mono">
-            LEVEL 11: <br/>
-            <span className="text-cyan-400">大腦升級中</span>
-          </h1>
-          <p className="text-gray-300 text-lg">給玩家 Wayne 的系統通知：<br/>你的身體正在安裝新驅動程式...</p>
-          <button 
-            onClick={() => setCurrentSlide(1)}
-            className="bg-cyan-600 hover:bg-cyan-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-cyan-500/30 animate-pulse mt-4"
-          >
-            開始檢測 🚀
-          </button>
-        </div>
-      )
-    },
-    {
-      id: 'science-hormone',
-      content: (
-        <div className="space-y-5 w-full">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Flame size={40} className="text-orange-500" />
-            <h2 className="text-2xl font-bold text-white">為什麼突然想看？</h2>
-          </div>
-          
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-600 text-left shadow-lg">
-            <h3 className="text-lg font-bold text-orange-400 mb-2">🧬 兇手是它：睪固酮 (T-Hormone)</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              你的身體開始分泌一種像「火箭燃料」的激素。
-              <br/><br/>
-              它會讓你長肌肉、聲音變低，但也讓你對<span className="text-white font-bold bg-orange-600/50 px-1 rounded">「女生的身體」</span>產生強烈的好奇心。
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-green-500/30">
-            <CheckCircle size={24} className="text-green-400 flex-shrink-0" />
-            <p className="text-sm text-green-200 text-left">這代表你的硬體發育正常！不是變態，是為了長大。</p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'science-trap',
-      content: (
-        <div className="space-y-6 w-full">
-          <Activity size={64} className="text-pink-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">大腦的 BUG</h2>
-          <p className="text-gray-300">
-            為什麼偷偷看的時候，心跳會超快？
-          </p>
-          
-          <div className="grid grid-cols-1 gap-4 w-full">
-            <div className="bg-slate-800 p-4 rounded-lg text-left border-l-4 border-pink-500">
-              <h3 className="text-white font-bold text-lg">🧪 多巴胺 (Dopamine)</h3>
-              <p className="text-sm text-gray-400 mt-1">
-                大腦這時候會分泌這種「快樂物質」，讓你覺得很興奮。
-                <br/>但小心！網路影片是設計來<span className="text-pink-400 font-bold">「駭進」</span>你的大腦，讓你想要一直看、停不下來。
-              </p>
+        const Icons = {
+            Gamepad2: (props) => <Icon {...props} path={<><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></>} />,
+            Flame: (props) => <Icon {...props} path={<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.113.434-2.126 1.192-2.884l.808-.808Z"/>} />,
+            Activity: (props) => <Icon {...props} path={<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>} />,
+            Play: (props) => <Icon {...props} path={<polygon points="5 3 19 12 5 21 5 3"/>} />,
+            Heart: (props) => <Icon {...props} path={<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>} />,
+            Skull: (props) => <Icon {...props} path={<><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 17v1a1 1 0 0 0 1 1h6z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></>} />,
+            Shield: (props) => <Icon {...props} path={<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>} />,
+            Eye: (props) => <Icon {...props} path={<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
+            CheckCircle: (props) => <Icon {...props} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
+            ArrowRight: (props) => <Icon {...props} path={<><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>} />,
+            ArrowLeft: (props) => <Icon {...props} path={<><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></>} />
+        };
+
+        const Slide = ({ children, className = "" }) => (
+            <div className={`flex flex-col items-center justify-center h-full p-6 text-center transition-opacity duration-500 ${className}`}>
+                {children}
             </div>
-            <p className="text-xs text-slate-500">這就是為什麼你會想開無痕視窗，這是大腦在找刺激。</p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'truth-filter',
-      content: (
-        <div className="space-y-4 w-full">
-          <div className="flex justify-center items-center gap-2">
-            <Eye size={32} className="text-yellow-400" />
-            <h2 className="text-xl font-bold text-white">破解網路幻術</h2>
-          </div>
-          <p className="text-sm text-gray-400 mb-2">點擊按鈕，拆穿特效</p>
-          
-          <div className="relative w-full h-72 bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-2xl group">
-            
-            {/* 影片模式 (紅色) */}
-            <div 
-              className={`absolute inset-0 transition-all duration-500 flex flex-col items-center justify-center p-6 bg-slate-900 z-20 ${isRevealed ? 'opacity-0 pointer-events-none translate-y-full' : 'opacity-100 pointer-events-auto translate-y-0'}`}
-            >
-              <Play size={48} className="text-red-500 mb-4 drop-shadow-lg" />
-              <h3 className="text-2xl font-black text-white">網路影片</h3>
-              <div className="bg-red-900/40 px-3 py-1 rounded text-red-200 text-xs font-mono mb-4">狀態：全是特效</div>
-              <ul className="text-left text-gray-300 text-sm space-y-2 w-full pl-6 list-disc">
-                <li>女生都在假裝很舒服 (演的)</li>
-                <li>情節誇張暴力 (像摔角)</li>
-                <li>這是在拍片賺錢，不是愛</li>
-              </ul>
-              <button 
-                onClick={() => setIsRevealed(true)}
-                className="mt-5 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-full font-bold shadow-lg border border-blue-400 animate-pulse"
-              >
-                👉 開啟「現實濾鏡」
-              </button>
-            </div>
+        );
 
-            {/* 真實模式 (綠色) */}
-            <div 
-              className={`absolute inset-0 bg-emerald-900/95 transition-all duration-500 flex flex-col items-center justify-center p-6 z-10 ${!isRevealed ? 'opacity-0' : 'opacity-100'}`}
-            >
-              <Heart size={48} className="text-pink-400 mb-4" />
-              <h3 className="text-2xl font-black text-white">現實世界</h3>
-              <div className="bg-emerald-800/40 px-3 py-1 rounded text-emerald-200 text-xs font-mono mb-4">狀態：真實玩家</div>
-              <ul className="text-left text-emerald-100 text-sm space-y-2 w-full pl-6 list-disc">
-                <li>真正的女生需要尊重跟溫柔</li>
-                <li>會牽手、聊天、有尷尬的時候</li>
-                <li>感覺比視覺更重要</li>
-              </ul>
-              <button 
-                onClick={() => setIsRevealed(false)}
-                className="mt-5 bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-full font-bold shadow-lg border border-slate-500"
-              >
-                返回
-              </button>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'warning-spicy',
-      content: (
-        <div className="space-y-6 w-full">
-          <div className="flex items-center justify-center gap-2">
-            <Skull size={40} className="text-gray-400" />
-            <h2 className="text-2xl font-bold text-white">副作用警告</h2>
-          </div>
-          
-          <div className="bg-slate-800 p-5 rounded-xl border-l-4 border-red-500 text-left shadow-lg">
-            <h3 className="text-lg font-bold text-red-400 mb-2">🌶️ 「地獄辣椒」效應</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              網路影片就像<span className="text-white font-bold">超級辣的辣椒</span>。
-              <br/><br/>
-              如果你每天都吃這種超重口味的東西，最後你的舌頭會壞掉。
-            </p>
-            <div className="my-3 border-t border-slate-700"></div>
-            <p className="text-gray-300 text-sm">
-              <span className="text-red-300 font-bold">結果：</span><br/>
-              你會覺得普通的蘋果（牽手、擁抱）完全沒味道。你會對真實的女生「無感」。這才是最可怕的。
-            </p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'action',
-      content: (
-        <div className="space-y-6 w-full">
-          <Shield size={64} className="text-cyan-400 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">玩家攻略</h2>
-          <div className="space-y-3 w-full text-left">
-            <div className="bg-slate-800 p-4 rounded-lg flex items-center gap-4 border border-slate-700">
-              <div className="text-2xl">🧐</div>
-              <div>
-                <h4 className="text-white font-bold text-sm">保持懷疑</h4>
-                <p className="text-gray-400 text-xs">看到誇張畫面時，告訴自己：「那是特效，那是假的。」</p>
-              </div>
-            </div>
-            <div className="bg-slate-800 p-4 rounded-lg flex items-center gap-4 border border-slate-700">
-              <div className="text-2xl">🏀</div>
-              <div>
-                <h4 className="text-white font-bold text-sm">消耗燃料</h4>
-                <p className="text-gray-400 text-xs">覺得衝動時去打球、跑步。把那些激素燒掉，你會變更強。</p>
-              </div>
-            </div>
-            <div className="bg-slate-800 p-4 rounded-lg flex items-center gap-4 border border-slate-700">
-              <div className="text-2xl">🧠</div>
-              <div>
-                <h4 className="text-white font-bold text-sm">做大腦的老闆</h4>
-                <p className="text-gray-400 text-xs">不要被演算法控制。你想關掉就關掉。</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    }
-  ];
+        const App = () => {
+            const [currentSlide, setCurrentSlide] = useState(0);
+            const [isRevealed, setIsRevealed] = useState(false);
 
-  const nextSlide = () => {
-    if (currentSlide < slides.length - 1) setCurrentSlide(curr => curr + 1);
-  };
+            const slides = [
+                {
+                    id: 'intro',
+                    content: (
+                        <div className="space-y-6 w-full animate-fade-in">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-cyan-500 blur-3xl opacity-20 rounded-full"></div>
+                                <div className="animate-bounce">
+                                    <Icons.Gamepad2 size={80} className="text-cyan-400 mx-auto relative z-10" />
+                                </div>
+                            </div>
+                            <h1 className="text-3xl font-black text-white tracking-wider font-mono">
+                                LEVEL 11: <br/>
+                                <span className="text-cyan-400">大腦升級中</span>
+                            </h1>
+                            <p className="text-gray-300 text-lg">給玩家 Wayne 的系統通知：<br/>你的身體正在安裝新驅動程式...</p>
+                            <button 
+                                onClick={() => setCurrentSlide(1)}
+                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-cyan-500/30 animate-pulse mt-4 transition-all"
+                            >
+                                開始檢測 🚀
+                            </button>
+                        </div>
+                    )
+                },
+                {
+                    id: 'science-hormone',
+                    content: (
+                        <div className="space-y-5 w-full">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                                <Icons.Flame size={40} className="text-orange-500" />
+                                <h2 className="text-2xl font-bold text-white">為什麼突然想看？</h2>
+                            </div>
+                            
+                            <div className="bg-slate-800 p-5 rounded-xl border border-slate-600 text-left shadow-lg">
+                                <h3 className="text-lg font-bold text-orange-400 mb-2">🧬 兇手是它：睪固酮 (T-Hormone)</h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    你的身體開始分泌一種像「火箭燃料」的激素。
+                                    <br/><br/>
+                                    它會讓你長肌肉、聲音變低，但也讓你對<span className="text-white font-bold bg-orange-600/50 px-1 rounded">「女生的身體」</span>產生強烈的好奇心。
+                                </p>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-green-500/30">
+                                <Icons.CheckCircle size={24} className="text-green-400 flex-shrink-0" />
+                                <p className="text-sm text-green-200 text-left">這代表你的硬體發育正常！不是變態，是為了長大。</p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'science-trap',
+                    content: (
+                        <div className="space-y-6 w-full">
+                            <Icons.Activity size={64} className="text-pink-500 mx-auto" />
+                            <h2 className="text-2xl font-bold text-white">大腦的 BUG</h2>
+                            <p className="text-gray-300">
+                                為什麼偷偷看的時候，心跳會超快？
+                            </p>
+                            
+                            <div className="grid grid-cols-1 gap-4 w-full">
+                                <div className="bg-slate-800 p-4 rounded-lg text-left border-l-4 border-pink-500">
+                                    <h3 className="text-white font-bold text-lg">🧪 多巴胺 (Dopamine)</h3>
+                                    <p className="text-sm text-gray-400 mt-1">
+                                        大腦這時候會分泌這種「快樂物質」，讓你覺得很興奮。
+                                        <br/>但小心！網路影片是設計來<span className="text-pink-400 font-bold">「駭進」</span>你的大腦，讓你想要一直看、停不下來。
+                                    </p>
+                                </div>
+                                <p className="text-xs text-slate-500">這就是為什麼你會想開無痕視窗，這是大腦在找刺激。</p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'truth-filter',
+                    content: (
+                        <div className="space-y-4 w-full">
+                            <div className="flex justify-center items-center gap-2">
+                                <Icons.Eye size={32} className="text-yellow-400" />
+                                <h2 className="text-xl font-bold text-white">破解網路幻術</h2>
+                            </div>
+                            <p className="text-sm text-gray-400 mb-2">點擊按鈕，拆穿特效</p>
+                            
+                            <div className="relative w-full h-72 bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-2xl group">
+                                
+                                {/* 影片模式 (紅色) */}
+                                <div 
+                                    className={`absolute inset-0 transition-all duration-500 flex flex-col items-center justify-center p-6 bg-slate-900 z-20 ${isRevealed ? 'opacity-0 pointer-events-none translate-y-full' : 'opacity-100 pointer-events-auto translate-y-0'}`}
+                                >
+                                    <Icons.Play size={48} className="text-red-500 mb-4 drop-shadow-lg" />
+                                    <h3 className="text-2xl font-black text-white">網路影片</h3>
+                                    <div className="bg-red-900/40 px-3 py-1 rounded text-red-200 text-xs font-mono mb-4">狀態：全是特效</div>
+                                    <ul className="text-left text-gray-300 text-sm space-y-2 w-full pl-6 list-disc">
+                                        <li>女生都在假裝很舒服 (演的)</li>
+                                        <li>情節誇張暴力 (像摔角)</li>
+                                        <li>這是在拍片賺錢，不是愛</li>
+                                    </ul>
+                                    <button 
+                                        onClick={() => setIsRevealed(true)}
+                                        className="mt-5 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-full font-bold shadow-lg border border-blue-400 animate-pulse"
+                                    >
+                                        👉 開啟「現實濾鏡」
+                                    </button>
+                                </div>
 
-  const prevSlide = () => {
-    if (currentSlide > 0) setCurrentSlide(curr => curr - 1);
-  };
+                                {/* 真實模式 (綠色) */}
+                                <div 
+                                    className={`absolute inset-0 bg-emerald-900/95 transition-all duration-500 flex flex-col items-center justify-center p-6 z-10 ${!isRevealed ? 'opacity-0' : 'opacity-100'}`}
+                                >
+                                    <Icons.Heart size={48} className="text-pink-400 mb-4" />
+                                    <h3 className="text-2xl font-black text-white">現實世界</h3>
+                                    <div className="bg-emerald-800/40 px-3 py-1 rounded text-emerald-200 text-xs font-mono mb-4">狀態：真實玩家</div>
+                                    <ul className="text-left text-emerald-100 text-sm space-y-2 w-full pl-6 list-disc">
+                                        <li>真正的女生需要尊重跟溫柔</li>
+                                        <li>會牽手、聊天、有尷尬的時候</li>
+                                        <li>感覺比視覺更重要</li>
+                                    </ul>
+                                    <button 
+                                        onClick={() => setIsRevealed(false)}
+                                        className="mt-5 bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-full font-bold shadow-lg border border-slate-500"
+                                    >
+                                        返回
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'warning-spicy',
+                    content: (
+                        <div className="space-y-6 w-full">
+                            <div className="flex items-center justify-center gap-2">
+                                <Icons.Skull size={40} className="text-gray-400" />
+                                <h2 className="text-2xl font-bold text-white">副作用警告</h2>
+                            </div>
+                            
+                            <div className="bg-slate-800 p-5 rounded-xl border-l-4 border-red-500 text-left shadow-lg">
+                                <h3 className="text-lg font-bold text-red-400 mb-2">🌶️ 「地獄辣椒」效應</h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    網路影片就像<span className="text-white font-bold">超級辣的辣椒</span>。
+                                    <br/><br/>
+                                    如果你每天都吃這種超重口味的東西，最後你的舌頭會壞掉。
+                                </p>
+                                <div className="my-3 border-t border-slate-700"></div>
+                                <p className="text-gray-300 text-sm">
+                                    <span className="text-red-300 font-bold">結果：</span><br/>
+                                    你會覺得普通的蘋果（牽手、擁抱）完全沒味道。你會對真實的女生「無感」。這才是最可怕的。
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'action',
+                    content: (
+                        <div className="space-y-6 w-full">
+                            <Icons.Shield size={64} className="text-cyan-400 mx-auto" />
+                            <h2 className="text-2xl font-bold text-white">玩家攻略</h2>
+                            <div className="space-y-3 w-full text-left">
+                                <div className="bg-slate-800 p-4 rounded-lg flex items-center gap-4 border border-slate-700">
+                                    <div className="text-2xl">🧐</div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-sm">保持懷疑</h4>
+                                        <p className="text-gray-400 text-xs">看到誇張畫面時，告訴自己：「那是特效，那是假的。」</p>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-800 p-4 rounded-lg flex items-center gap-4 border border-slate-700">
+                                    <div className="text-2xl">🏀</div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-sm">消耗燃料</h4>
+                                        <p className="text-gray-400 text-xs">覺得衝動時去打球、跑步。把那些激素燒掉，你會變更強。</p>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-800 p-4 rounded-lg flex items-center gap-4 border border-slate-700">
+                                    <div className="text-2xl">🧠</div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-sm">做大腦的老闆</h4>
+                                        <p className="text-gray-400 text-xs">不要被演算法控制。你想關掉就關掉。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+            ];
 
-  return (
-    <div className="w-full h-screen bg-slate-950 flex items-center justify-center p-4 font-sans overflow-hidden">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl h-[700px] relative flex flex-col overflow-hidden ring-1 ring-cyan-900/50">
-        
-        {/* Progress Bar */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-slate-800 z-30">
-          <div 
-            className="h-full bg-cyan-500 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.6)]"
-            style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
-          ></div>
-        </div>
+            const nextSlide = () => {
+                if (currentSlide < slides.length - 1) setCurrentSlide(curr => curr + 1);
+            };
 
-        {/* Content Area */}
-        <div className="flex-1 relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div 
-              key={slide.id}
-              className={`absolute inset-0 transition-all duration-500 transform w-full h-full
-                ${index === currentSlide 
-                  ? 'translate-x-0 opacity-100 z-10 pointer-events-auto' 
-                  : index < currentSlide 
-                    ? '-translate-x-full opacity-0 z-0 pointer-events-none' 
-                    : 'translate-x-full opacity-0 z-0 pointer-events-none'
-                }`}
-            >
-              <Slide>{slide.content}</Slide>
-            </div>
-          ))}
-        </div>
+            const prevSlide = () => {
+                if (currentSlide > 0) setCurrentSlide(curr => curr - 1);
+            };
 
-        {/* Navigation */}
-        <div className="h-20 bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-8 border-t border-slate-800 z-30">
-          <button 
-            onClick={prevSlide}
-            disabled={currentSlide === 0}
-            className={`p-4 rounded-full transition-all active:scale-95 ${
-              currentSlide === 0 ? 'text-slate-700 cursor-not-allowed' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-            }`}
-          >
-            <ArrowLeft size={28} />
-          </button>
+            return (
+                <div className="w-full h-screen bg-slate-950 flex items-center justify-center p-4 font-sans overflow-hidden">
+                    <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl h-[700px] relative flex flex-col overflow-hidden ring-1 ring-cyan-900/50">
+                        
+                        {/* Progress Bar */}
+                        <div className="absolute top-0 left-0 w-full h-1 bg-slate-800 z-30">
+                            <div 
+                                className="h-full bg-cyan-500 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+                                style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
+                            ></div>
+                        </div>
 
-          <div className="flex gap-2">
-            {slides.map((_, idx) => (
-              <div 
-                key={idx}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  idx === currentSlide ? 'bg-cyan-500 w-6 shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'bg-slate-700 w-2'
-                }`}
-              />
-            ))}
-          </div>
+                        {/* Content Area */}
+                        <div className="flex-1 relative w-full h-full">
+                            {slides.map((slide, index) => (
+                                <div 
+                                    key={slide.id}
+                                    className={`absolute inset-0 transition-all duration-500 transform w-full h-full
+                                        ${index === currentSlide 
+                                        ? 'translate-x-0 opacity-100 z-10 pointer-events-auto' 
+                                        : index < currentSlide 
+                                            ? '-translate-x-full opacity-0 z-0 pointer-events-none' 
+                                            : 'translate-x-full opacity-0 z-0 pointer-events-none'
+                                        }`}
+                                >
+                                    <Slide>{slide.content}</Slide>
+                                </div>
+                            ))}
+                        </div>
 
-          <button 
-            onClick={nextSlide}
-            disabled={currentSlide === slides.length - 1}
-            className={`p-4 rounded-full transition-all active:scale-95 ${
-              currentSlide === slides.length - 1 ? 'text-slate-700 cursor-not-allowed' : 'text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300'
-            }`}
-          >
-            <ArrowRight size={28} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+                        {/* Navigation */}
+                        <div className="h-20 bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-8 border-t border-slate-800 z-30">
+                            <button 
+                                onClick={prevSlide}
+                                disabled={currentSlide === 0}
+                                className={`p-4 rounded-full transition-all active:scale-95 ${
+                                    currentSlide === 0 ? 'text-slate-700 cursor-not-allowed' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                }`}
+                            >
+                                <Icons.ArrowLeft size={28} />
+                            </button>
 
-export default App;
+                            <div className="flex gap-2">
+                                {slides.map((_, idx) => (
+                                    <div 
+                                        key={idx}
+                                        className={`h-2 rounded-full transition-all duration-300 ${
+                                            idx === currentSlide ? 'bg-cyan-500 w-6 shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'bg-slate-700 w-2'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+
+                            <button 
+                                onClick={nextSlide}
+                                disabled={currentSlide === slides.length - 1}
+                                className={`p-4 rounded-full transition-all active:scale-95 ${
+                                    currentSlide === slides.length - 1 ? 'text-slate-700 cursor-not-allowed' : 'text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300'
+                                }`}
+                            >
+                                <Icons.ArrowRight size={28} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
